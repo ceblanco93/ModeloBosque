@@ -12,22 +12,22 @@ unique_products = data['ID del Producto'].unique()
 # Agregar los datos por fecha y producto, sumando los ingresos de todos los vendedores
 data_aggregated_revenue = data.groupby(['Fecha', 'ID del Producto']).agg({'Ingresos de Productos': 'sum'}).reset_index()
 
-# Crear lags para 'Ingresos de Productos'
+# Crear lags para Ingresos de Productos
 for i in range(1, 13):
     data_aggregated_revenue[f'lag_{i}'] = data_aggregated_revenue.groupby('ID del Producto')['Ingresos de Productos'].shift(i)
 
-# Eliminar las filas con NaN (debido a los lags)
+# Eliminar las filas con valores cero
 data_aggregated_revenue = data_aggregated_revenue.dropna()
 
 # Dividir las características y la variable objetivo
 X_revenue = data_aggregated_revenue.drop(columns=['Fecha', 'Ingresos de Productos'])
 y_revenue = data_aggregated_revenue['Ingresos de Productos']
 
-# Entrenar el modelo de bosque aleatorio para 'Ingresos de Productos'
+# Entrenar el modelo de bosque aleatorio 
 rf_revenue = RandomForestRegressor(n_estimators=100, random_state=42)
 rf_revenue.fit(X_revenue, y_revenue)
 
-# Función para predecir los valores futuros para un producto específico y graficar los resultados
+# Función para predecir los valores futuros
 def predict_and_plot_for_product_revenue(product_id, model, train_data, product_name_dict):
     product_data = train_data[train_data['ID del Producto'] == product_id]
     if len(product_data) == 0:
@@ -50,8 +50,6 @@ def predict_and_plot_for_product_revenue(product_id, model, train_data, product_
     plt.title(f'Prediccion {product_name_dict[product_id]}')
     plt.xlabel('Datos historicos')
     plt.ylabel('Ingresos de Productos')
-    
-    # Formatear las etiquetas del eje y para mostrar los valores completos
     ax = plt.gca()
     ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
     plt.legend()
@@ -59,7 +57,7 @@ def predict_and_plot_for_product_revenue(product_id, model, train_data, product_
     plt.tight_layout()
     plt.show()
 
-# Generar predicciones y gráficos para 'Ingresos de Productos'
+# Generar predicciones y gráficos para Ingresos de Productos
 product_name_dict = data.set_index('ID del Producto')['Nombre del Producto'].to_dict()
 for product_id in unique_products:
     predict_and_plot_for_product_revenue(product_id, rf_revenue, data_aggregated_revenue, product_name_dict)

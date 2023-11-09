@@ -8,25 +8,25 @@ data = pd.read_csv('archivo_convertido_nuevo.csv', parse_dates=['Fecha'])
 # Obtener la lista única de productos
 unique_products = data['ID del Producto'].unique()
 
-# Agregar los datos por fecha y producto, sumando el stock final de todos los vendedores
+# Agregar los datos por fecha y producto
 data_aggregated_final = data.groupby(['Fecha', 'ID del Producto']).agg({'Stock Inicial': 'sum'}).reset_index()
 
-# Crear lags para 'Stock Final'
+# Crear lags para Stock inicial
 for i in range(1, 13):
     data_aggregated_final[f'lag_{i}'] = data_aggregated_final.groupby('ID del Producto')['Stock Inicial'].shift(i)
 
-# Eliminar las filas con NaN (debido a los lags)
+# Eliminar las filas con valores cero
 data_aggregated_final = data_aggregated_final.dropna()
 
 # Dividir las características y la variable objetivo
 X_final = data_aggregated_final.drop(columns=['Fecha', 'Stock Inicial'])
 y_final = data_aggregated_final['Stock Inicial']
 
-# Entrenar el modelo de bosque aleatorio para 'Stock Final'
+# Entrenar el modelo de bosque aleatorio para Stock Final
 rf_final = RandomForestRegressor(n_estimators=100, random_state=42)
 rf_final.fit(X_final, y_final)
 
-# Función para predecir los valores futuros para un producto específico y graficar los resultados
+# Función para predecir los valores futuros 
 def predict_and_plot_for_product_final(product_id, model, train_data, product_name_dict):
     product_data = train_data[train_data['ID del Producto'] == product_id]
     if len(product_data) == 0:
@@ -53,7 +53,7 @@ def predict_and_plot_for_product_final(product_id, model, train_data, product_na
     plt.tight_layout()
     plt.show()
 
-# Generar predicciones y gráficos para 'Stock Final'
+# Generar predicciones y gráficos para Stock inicial
 product_name_dict = data.set_index('ID del Producto')['Nombre del Producto'].to_dict()
 for product_id in unique_products:
     predict_and_plot_for_product_final(product_id, rf_final, data_aggregated_final, product_name_dict)

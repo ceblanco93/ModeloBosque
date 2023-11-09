@@ -12,7 +12,7 @@ data = pd.read_csv('archivo_convertido_nuevo.csv')
 data['Fecha'] = pd.to_datetime(data['Fecha'])
 data = data.sort_values(by=['ID del Producto', 'Fecha'])
 
-# Creación de características basadas en tiempo (ajusta esto según tu necesidad)
+# Creación de características basadas en tiempo
 data['Year'] = data['Fecha'].dt.year
 data['Month'] = data['Fecha'].dt.month
 data['Day'] = data['Fecha'].dt.day
@@ -21,21 +21,21 @@ data['Day'] = data['Fecha'].dt.day
 categorical_columns = data.select_dtypes(include=['object']).columns.tolist()
 label_encoders = {}
 for column in categorical_columns:
-    if column != 'Fecha':  # Asumiendo que 'Fecha' no se usa como característica
+    if column != 'Fecha':
         le = LabelEncoder()
         data[column] = le.fit_transform(data[column])
-        label_encoders[column] = le  # Guardar el codificador para uso futuro si es necesario
+        label_encoders[column] = le
 
-# Limpiar los valores NaN de la variable objetivo
+# Limpiar los valores que contenga valores nulos o ceros de la variable objetivo
 data_clean = data.dropna(subset=['Stock Inicial'])
 
 # Definir características y variable objetivo
 features = [col for col in data_clean.columns if col not in ['Stock Inicial', 'Fecha', 'Stock Final','Costo Unitario','Costo por Unidad de Producto']]  # Ajusta los nombres de las columnas
 X = data_clean[features]
-y = data_clean['Stock Inicial']  # Asegúrate de que 'Stock Inicial' sea tu variable objetivo
+y = data_clean['Stock Inicial']
 
 # Imputación de valores faltantes
-imputer = SimpleImputer(strategy='mean')  # Puedes cambiar a 'median' o 'most_frequent' si es más adecuado
+imputer = SimpleImputer(strategy='mean')
 X_imputed = imputer.fit_transform(X)
 
 # División de los datos en conjuntos de entrenamiento y prueba
